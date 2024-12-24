@@ -1,7 +1,13 @@
 package assistant;
 
+import CustomExceptions.IncorrectNameException;
+import CustomExceptions.KeywordNotImplementedException;
+import CustomExceptions.NoKeywordProvidedException;
+
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.InputMismatchException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class VirtualAssistant {
@@ -15,15 +21,77 @@ public class VirtualAssistant {
 
     // TODO Create the KeywordEnum
 
+    public enum KeywordEnum {
+        YELL,
+        TIME,
+        SUM,
+        PRODUCT,
+        LARGEST,
+        PLAY,
+        ORDER,
+        SING
+    }
+
 
 
     public VirtualAssistant(String name) {
         this.name = name;
     }
 
-    public void processInput(String input, Scanner scanner) {
-        // TODO Follow instructions on README
+    /**
+     *
+     * @param input
+     * @param scanner
+     * @throws IncorrectNameException
+     * @throws NoKeywordProvidedException
+     * @throws KeywordNotImplementedException
+     */
 
+    public void processInput(String input, Scanner scanner)
+            throws IncorrectNameException,
+            NoKeywordProvidedException,
+            KeywordNotImplementedException {
+        // TODO Follow instructions on README
+        // Does input start with our Assistant's name?
+        if (!input.startsWith(name + " ")) {
+            throw new IncorrectNameException();
+        }
+
+        // Is there anything after the assistant's name?
+        // I could substring off the name
+        // I could check the length
+        String keyword = input.substring(name.length() + 1);
+        keyword = keyword.trim().toUpperCase();
+
+        if (keyword.equals("")) {
+            throw new NoKeywordProvidedException();
+        }
+
+        KeywordEnum key = KeywordEnum.valueOf(keyword);
+
+        switch (key) {
+            case YELL:
+                String yellInput = waitForNextLine("What would you like me to yell?", scanner);
+                System.out.println(yellInput.toUpperCase() + "!");
+                break;
+            case TIME:
+                System.out.println(getCurrentTime());
+                break;
+            case SUM:
+                String sumInput = waitForNextLine("Type in the numbers to sum separated by a space.", scanner);
+                System.out.println("The sum of those numbers is " + sum(sumInput));
+                break;
+            case PRODUCT:
+                String productInput = waitForNextLine("Type in the numbers to multiply separated by a space.", scanner);
+                System.out.println("The product of those numbers is " + product(productInput));
+                break;
+            case LARGEST:
+                String largestInput = waitForNextLine("Type in the numbers separated by a space.", scanner);
+                System.out.println("The largest of those numbers is " + largest(largestInput));
+                break;
+            default:
+                throw new KeywordNotImplementedException();
+        }
     }
 
     /**
@@ -36,10 +104,21 @@ public class VirtualAssistant {
 
         while (!input.equalsIgnoreCase(stopProgramKeyword)) {
             // TODO Fix exceptions that will occur upon further implementation of process input.
-            processInput(input, scanner);
-
-
-
+            try {
+                processInput(input, scanner);
+            } catch (IncorrectNameException e) {
+                System.out.println("Please start your command with the assistant's name.");
+            } catch (NoKeywordProvidedException e) {
+                System.out.println("Please enter a keyword after the assistant's name.");
+            } catch (IllegalArgumentException e) {
+                System.out.println("I do not know that command.");
+            } catch (InputMismatchException e) {
+                System.out.println("I can only apply that command to numbers.");
+            } catch (NoSuchElementException e) {
+                System.out.println("You must give me input to calculate the largest.");
+            } catch (KeywordNotImplementedException e) {
+                System.out.println("This feature is not yet implemented.");
+            }
 
             System.out.println();
             input = waitForNextLine(startingPrompt, scanner);
@@ -54,7 +133,14 @@ public class VirtualAssistant {
      */
     public double sum(String values) {
         // TODO Implement this method.
-        return 0.0;
+        Scanner scanner = new Scanner(values);
+
+        double sumResult = 0.0;
+        while (scanner.hasNext()) {
+            sumResult += scanner.nextDouble();
+        }
+
+        return sumResult;
     }
 
     /**
@@ -65,7 +151,14 @@ public class VirtualAssistant {
      */
     public double product(String values) {
         // TODO Implement this method.
-        return 0.0;
+        Scanner scanner = new Scanner(values);
+
+        double productResult = 1.0;
+        while (scanner.hasNext()) {
+            productResult *= scanner.nextDouble();
+        }
+
+        return productResult;
     }
 
     /**
@@ -76,7 +169,21 @@ public class VirtualAssistant {
      */
     public double largest(String values) {
         // TODO Implement this method.
-        return 0.0;
+        Scanner scanner = new Scanner(values);
+
+        double biggest = scanner.nextDouble();
+        // The first number I hear is the potential largest.
+        // Now compare the next I hear to my largest. If it is larger, update my mental largest value.
+        // Keep doing that for every new number.
+
+        while (scanner.hasNext()) {
+            double current = scanner.nextDouble();
+            if (current > biggest) {
+                biggest = current;
+            }
+        }
+
+        return biggest;
     }
 
     /**
